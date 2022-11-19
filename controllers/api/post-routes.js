@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const { User, Post } = require("../../models");
+const withAuth = require("../../utils/auth");
 
 router.get("/", (req, res) => {
   Post.findAll({
@@ -28,6 +29,14 @@ router.get("/:id", (req, res) => {
         model: User,
         attributes: ["username"],
       },
+      {
+        model: Comment,
+        attributes: ["id", "comment_body", "post_id", "user_id", "created_at"],
+        include: {
+          model: User,
+          attributes: ["username"],
+        },
+      },
     ],
   })
     .then((dbPostData) => {
@@ -47,7 +56,7 @@ router.post("/", (req, res) => {
   Post.create({
     title: req.body.title,
     content: req.body.content,
-    user_id: req.body.user_id,
+    user_id: req.session.user_id,
   })
     .then((dbPostData) => res.json(dbPostData))
     .catch((err) => {
